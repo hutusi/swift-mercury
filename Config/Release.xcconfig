@@ -1,0 +1,2 @@
+// Placeholder until Mercury has a production deployment.
+API_BASE_URL = https:/$()/mercury.example.com
