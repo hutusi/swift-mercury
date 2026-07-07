@@ -605,6 +605,16 @@
         }
       }
     },
+    "Reveals the meaning and examples.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "显示释义和例句。"
+          }
+        }
+      }
+    },
     "Review": {
       "localizations": {
         "zh-Hans": {
@@ -631,6 +641,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "学习完成"
+          }
+        }
+      }
+    },
+    "Shows the front of the card again.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重新显示卡片正面。"
           }
         }
       }

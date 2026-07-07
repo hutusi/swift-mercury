@@ -8,6 +8,33 @@ final class SmokeTests: XCTestCase {
         ProcessInfo.processInfo.environment["MERCURY_BASE_URL"] ?? "http://localhost:3000"
     }
 
+    /// iOS may float a "Save Password?" sheet over the app after sign-up. It
+    /// is hosted by SafariViewService (a separate process), so it must be
+    /// dismissed via that app's element tree — queries on the app under test
+    /// can't see it, and while it's up it swallows every tap.
+    @MainActor
+    private func dismissSavePasswordSheetIfPresent() {
+        for bundleID in ["com.apple.SafariViewService", "com.apple.springboard"] {
+            let host = XCUIApplication(bundleIdentifier: bundleID)
+            let notNow = host.buttons["Not Now"]
+            if notNow.waitForExistence(timeout: 2) {
+                notNow.tap()
+                return
+            }
+        }
+    }
+
+    /// Hittability can flap during view transitions and at accessibility text
+    /// sizes; a coordinate tap at the element's center bypasses the check.
+    @MainActor
+    private func tapRobustly(_ element: XCUIElement) {
+        if element.isHittable {
+            element.tap()
+        } else {
+            element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        }
+    }
+
     /// Fails fast with a clear message when the backend isn't reachable.
     private func assertBackendReachable() throws {
         let url = URL(string: baseURL + "/api/v1/me")!
@@ -50,17 +77,20 @@ final class SmokeTests: XCTestCase {
         app.secureTextFields["Password (8+ characters)"].tap()
         app.secureTextFields["Password (8+ characters)"].typeText("password123")
         app.buttons["Create Account"].tap()
+        dismissSavePasswordSheetIfPresent()
 
         // Onboarding: pick TOEIC. Wait out the keyboard dismissal first —
         // taps at stale coordinates get lost.
         let toeicButton = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'TOEIC'")).firstMatch
         XCTAssertTrue(toeicButton.waitForExistence(timeout: 15), "onboarding did not appear — is the backend running?")
         _ = app.keyboards.firstMatch.waitForNonExistence(timeout: 5)
-        toeicButton.tap()
+        dismissSavePasswordSheetIfPresent()  // the sheet can arrive late
+        tapRobustly(toeicButton)
 
         let welcome = app.staticTexts["Welcome to Mercury!"]
         for _ in 0..<2 where !welcome.waitForExistence(timeout: 8) {
-            if toeicButton.exists { toeicButton.tap() }
+            dismissSavePasswordSheetIfPresent()
+            if toeicButton.exists { tapRobustly(toeicButton) }
         }
         XCTAssertTrue(welcome.waitForExistence(timeout: 15), "dashboard did not appear after onboarding")
 

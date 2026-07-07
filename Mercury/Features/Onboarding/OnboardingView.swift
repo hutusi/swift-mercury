@@ -8,26 +8,28 @@ struct OnboardingView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("What are you preparing for?")
-                    .font(.title2.bold())
-                Text("You can change tracks any time from your profile.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+            // ScrollView, not VStack: at accessibility text sizes the cards
+            // overflow the screen and become untappable otherwise.
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("What are you preparing for?")
+                        .font(.title2.bold())
+                    Text("You can change tracks any time from your profile.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
 
-                ForEach(Track.allCases) { track in
-                    trackCard(track)
+                    ForEach(Track.allCases) { track in
+                        trackCard(track)
+                    }
+
+                    if let errorMessage {
+                        Text(errorMessage)
+                            .font(.footnote)
+                            .foregroundStyle(.red)
+                    }
                 }
-
-                if let errorMessage {
-                    Text(errorMessage)
-                        .font(.footnote)
-                        .foregroundStyle(.red)
-                }
-
-                Spacer()
+                .padding()
             }
-            .padding()
             .navigationTitle("Choose a Track")
             .navigationBarTitleDisplayMode(.inline)
         }
