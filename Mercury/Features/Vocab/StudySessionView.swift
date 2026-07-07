@@ -132,7 +132,7 @@ struct StudySessionView: View {
         ContentUnavailableView {
             Label("Session Complete", systemImage: "party.popper.fill")
         } description: {
-            Text("You reviewed \(reviewed) word\(reviewed == 1 ? "" : "s"). Keep the streak going!")
+            Text("You reviewed ^[\(reviewed) word](inflect: true). Keep the streak going!")
         } actions: {
             Button("Done") { dismiss() }
                 .buttonStyle(.borderedProminent)

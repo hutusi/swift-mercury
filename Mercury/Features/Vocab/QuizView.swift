@@ -3,6 +3,7 @@ import SwiftUI
 struct QuizView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var model: QuizViewModel
+    @State private var confirmClose = false
 
     init(api: any MercuryAPI) {
         _model = State(initialValue: QuizViewModel(api: api))
@@ -56,17 +57,31 @@ struct QuizView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
-                        dismiss()
+                        if model.hasUnsavedProgress {
+                            confirmClose = true
+                        } else {
+                            dismiss()
+                        }
                     } label: {
                         Image(systemName: "xmark")
                     }
                 }
             }
+            .confirmationDialog(
+                "Abandon this quiz?",
+                isPresented: $confirmClose,
+                titleVisibility: .visible
+            ) {
+                Button("Abandon Quiz", role: .destructive) { dismiss() }
+                Button("Keep Going", role: .cancel) {}
+            } message: {
+                Text("Your answers so far will be discarded.")
+            }
         }
         .task {
             await model.load()
         }
-        .interactiveDismissDisabled(model.state == .active && !model.answers.isEmpty)
+        .interactiveDismissDisabled(model.hasUnsavedProgress)
     }
 
     private var questionView: some View {

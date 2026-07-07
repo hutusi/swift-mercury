@@ -25,8 +25,6 @@ targets:
       properties:
         UILaunchScreen: {}
         APIBaseURL: $(API_BASE_URL)
-        NSAppTransportSecurity:
-          NSAllowsLocalNetworking: true
   MercuryTests:
     type: bundle.unit-test
     platform: iOS

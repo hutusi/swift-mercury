@@ -11,23 +11,6 @@ struct VocabWord: Decodable, Equatable, Identifiable {
     let translationZh: String
     let exampleEn: String
     let exampleZh: String
-
-    init(
-        id: String, track: Track, topic: String, headword: String, ipa: String,
-        pos: String, definitionEn: String, translationZh: String,
-        exampleEn: String, exampleZh: String
-    ) {
-        self.id = id
-        self.track = track
-        self.topic = topic
-        self.headword = headword
-        self.ipa = ipa
-        self.pos = pos
-        self.definitionEn = definitionEn
-        self.translationZh = translationZh
-        self.exampleEn = exampleEn
-        self.exampleZh = exampleZh
-    }
 }
 
 /// A vocab word plus the caller's SRS flags, flattened in the JSON.

@@ -33,6 +33,15 @@ final class QuizViewModel {
         "\(min(index + 1, questions.count)) / \(questions.count)"
     }
 
+    /// True while dismissing would silently discard the user's answers.
+    var hasUnsavedProgress: Bool {
+        guard !answers.isEmpty else { return false }
+        switch state {
+        case .active, .submitFailed: return true
+        default: return false
+        }
+    }
+
     func load() async {
         state = .loading
         do {
@@ -59,6 +68,7 @@ final class QuizViewModel {
 
     /// Answers are kept on failure so submission can be retried.
     func submit() async {
+        guard state != .submitting else { return }
         state = .submitting
         do {
             state = .result(try await api.submitQuiz(track: track, answers: answers))

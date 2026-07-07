@@ -4,6 +4,7 @@ struct ProfileView: View {
     let session: SessionModel
 
     @State private var trackError: String?
+    @State private var isChangingTrack = false
     @State private var isSigningOut = false
     #if DEBUG
     @State private var serverOverride = UserDefaults.standard.string(forKey: AppConfig.baseURLOverrideKey) ?? ""
@@ -31,6 +32,7 @@ struct ProfileView: View {
                                 value: me.settings?.activeTrack.displayName ?? "—"
                             )
                         }
+                        .disabled(isChangingTrack)
                     } header: {
                         Text("Learning")
                     } footer: {
@@ -86,6 +88,9 @@ struct ProfileView: View {
     }
 
     private func changeTrack(_ track: Track) async {
+        guard !isChangingTrack else { return }
+        isChangingTrack = true
+        defer { isChangingTrack = false }
         trackError = nil
         do {
             try await session.changeTrack(track)

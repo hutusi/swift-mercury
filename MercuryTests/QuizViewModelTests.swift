@@ -27,12 +27,14 @@ struct QuizViewModelTests {
         }
         let model = QuizViewModel(api: api)
         await model.load()
+        #expect(!model.hasUnsavedProgress)
 
         await model.select(QuizOption(wordId: "other-1", text: "wrong 1"))
 
         #expect(model.answers == ["w1": "other-1"])
         #expect(model.currentQuestion?.wordId == "w2")
         #expect(model.state == .active)
+        #expect(model.hasUnsavedProgress)
     }
 
     @Test func answeringLastQuestionSubmitsWithTrackAndAnswers() async {
@@ -88,6 +90,7 @@ struct QuizViewModelTests {
             return
         }
         #expect(model.answers == ["w1": "other-1"])
+        #expect(model.hasUnsavedProgress)
 
         await model.submit()
 
@@ -95,6 +98,7 @@ struct QuizViewModelTests {
             Issue.record("expected .result after retry, got \(model.state)")
             return
         }
+        #expect(!model.hasUnsavedProgress)
     }
 
     @Test func resultReviewHelpers() async {
