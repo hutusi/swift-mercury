@@ -80,7 +80,8 @@ struct AuthServiceTests {
             _ = try await service.signIn(email: "a@b.com", password: "wrong")
         } throws: { error in
             guard case .authFailed(let message) = error as? APIError else { return false }
-            return message == "Invalid email or password"
+            // The known better-auth code maps to localized client copy.
+            return message == String(localized: "Invalid email or password.")
         }
     }
 

@@ -12,6 +12,8 @@ settings:
     SWIFT_VERSION: "6.0"
     SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
     SWIFT_APPROACHABLE_CONCURRENCY: YES
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+    SWIFT_EMIT_LOC_STRINGS: YES
 targets:
   Mercury:
     type: application
@@ -25,6 +27,7 @@ targets:
       properties:
         UILaunchScreen: {}
         APIBaseURL: $(API_BASE_URL)
+        CFBundleLocalizations: [en, zh-Hans]
   MercuryTests:
     type: bundle.unit-test
     platform: iOS

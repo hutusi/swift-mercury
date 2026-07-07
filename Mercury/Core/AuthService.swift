@@ -71,9 +71,14 @@ final class AuthService {
 
         guard (200..<300).contains(response.statusCode) else {
             let body = try? JSONDecoder().decode(AuthErrorBody.self, from: data)
-            throw APIError.authFailed(
-                message: body?.message ?? String(localized: "Authentication failed.")
-            )
+            // better-auth messages are English-only; localize the code we know.
+            let message: String
+            if body?.code == "INVALID_EMAIL_OR_PASSWORD" {
+                message = String(localized: "Invalid email or password.")
+            } else {
+                message = body?.message ?? String(localized: "Authentication failed.")
+            }
+            throw APIError.authFailed(message: message)
         }
 
         if let token = response.value(forHTTPHeaderField: "set-auth-token"), !token.isEmpty {

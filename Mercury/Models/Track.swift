@@ -9,9 +9,9 @@ enum Track: String, Codable, CaseIterable, Identifiable, Hashable {
 
     var displayName: String {
         switch self {
-        case .toeic: "TOEIC"
-        case .ielts: "IELTS"
-        case .business: "Business English"
+        case .toeic: String(localized: "TOEIC")
+        case .ielts: String(localized: "IELTS")
+        case .business: String(localized: "Business English")
         }
     }
 }
