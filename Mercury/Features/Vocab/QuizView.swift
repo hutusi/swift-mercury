@@ -123,11 +123,13 @@ struct QuizView: View {
                     Text("\(result.score) / \(result.total)")
                         .font(.system(size: 44, weight: .bold))
                         .monospacedDigit()
-                    Text(result.score == result.total
-                         ? "Perfect score!"
-                         : "Missed words go to your mistakes notebook.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    Text(
+                        result.score == result.total
+                            ? "Perfect score!"
+                            : "Missed words go to your mistakes notebook."
+                    )
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)

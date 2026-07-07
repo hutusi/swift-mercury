@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import Mercury
 
 /// Fixtures under `Fixtures/` are captured verbatim from a live Mercury server
@@ -53,16 +54,16 @@ struct DTODecodingTests {
 
     @Test func unknownScoreKindDoesNotFailDecoding() throws {
         let json = """
-        {"kind": "pronunciation", "at": "2026-07-07T01:00:00.000Z", "scoreLabel": null}
-        """
+            {"kind": "pronunciation", "at": "2026-07-07T01:00:00.000Z", "scoreLabel": null}
+            """
         let score = try Fixtures.decode(RecentScore.self, fromJSON: json)
         #expect(score.kind == .unknown("pronunciation"))
     }
 
     @Test func decodesWritingScoreWithLabel() throws {
         let json = """
-        {"kind": "writing", "at": "2026-07-07T01:00:00.000Z", "scoreLabel": "Band 6.5"}
-        """
+            {"kind": "writing", "at": "2026-07-07T01:00:00.000Z", "scoreLabel": "Band 6.5"}
+            """
         let score = try Fixtures.decode(RecentScore.self, fromJSON: json)
         #expect(score.kind == .writing)
         #expect(score.scoreLabel == "Band 6.5")
@@ -71,16 +72,16 @@ struct DTODecodingTests {
 
     @Test func decodesToeicEstimate() throws {
         let json = """
-        {"kind": "toeic", "listening": 320, "reading": 290, "total": 610}
-        """
+            {"kind": "toeic", "listening": 320, "reading": 290, "total": 610}
+            """
         let estimate = try Fixtures.decode(ExamEstimate.self, fromJSON: json)
         #expect(estimate == .toeic(listening: 320, reading: 290, total: 610))
     }
 
     @Test func decodesIeltsEstimate() throws {
         let json = """
-        {"kind": "ielts", "band": 6.5}
-        """
+            {"kind": "ielts", "band": 6.5}
+            """
         let estimate = try Fixtures.decode(ExamEstimate.self, fromJSON: json)
         #expect(estimate == .ielts(band: 6.5))
     }

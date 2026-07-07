@@ -18,7 +18,8 @@ final class AuthService {
 
     init(baseURL: URL, transport: (any HTTPTransport)? = nil) {
         self.baseURL = baseURL
-        self.transport = transport
+        self.transport =
+            transport
             ?? URLSessionTransport(session: URLSession(configuration: APIClient.makeURLSessionConfiguration()))
     }
 

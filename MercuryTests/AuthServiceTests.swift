@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import Mercury
 
 struct AuthServiceTests {
@@ -15,10 +16,13 @@ struct AuthServiceTests {
     @Test func signInPrefersHeaderToken() async throws {
         let body = try Fixtures.data("signup-body")
         let (service, transport) = makeService { request in
-            (body, makeHTTPResponse(
-                url: request.url!, status: 200,
-                headers: ["set-auth-token": "header-token"]
-            ))
+            (
+                body,
+                makeHTTPResponse(
+                    url: request.url!, status: 200,
+                    headers: ["set-auth-token": "header-token"]
+                )
+            )
         }
 
         let token = try await service.signIn(email: "a@b.com", password: "password123")
@@ -44,10 +48,13 @@ struct AuthServiceTests {
     @Test func signUpSendsNameEmailPassword() async throws {
         let body = try Fixtures.data("signup-body")
         let (service, transport) = makeService { request in
-            (body, makeHTTPResponse(
-                url: request.url!, status: 200,
-                headers: ["set-auth-token": "t"]
-            ))
+            (
+                body,
+                makeHTTPResponse(
+                    url: request.url!, status: 200,
+                    headers: ["set-auth-token": "t"]
+                )
+            )
         }
 
         _ = try await service.signUp(name: "iOS Fixture", email: "a@b.com", password: "password123")

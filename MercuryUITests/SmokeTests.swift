@@ -19,7 +19,9 @@ final class SmokeTests: XCTestCase {
         }.resume()
         wait(for: [expectation], timeout: 10)
         guard status == 401 else {
-            throw XCTSkip("Mercury backend not reachable at \(baseURL) (got \(status.map(String.init) ?? "no response"), expected 401) — start it or set TEST_RUNNER_MERCURY_BASE_URL")
+            throw XCTSkip(
+                "Mercury backend not reachable at \(baseURL) (got \(status.map(String.init) ?? "no response"), expected 401) — start it or set TEST_RUNNER_MERCURY_BASE_URL"
+            )
         }
     }
 
@@ -67,7 +69,7 @@ final class SmokeTests: XCTestCase {
         vocabTab.tap()
         let studyButton = app.buttons["Study New Words"]
         if !studyButton.waitForExistence(timeout: 10) {
-            vocabTab.tap() // the floating tab bar can swallow a tap while settling
+            vocabTab.tap()  // the floating tab bar can swallow a tap while settling
         }
         XCTAssertTrue(studyButton.waitForExistence(timeout: 10), "vocab overview did not appear")
         studyButton.tap()

@@ -31,7 +31,8 @@ final class KeychainTokenStore: TokenStore {
 
         var result: AnyObject?
         guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
-              let data = result as? Data else {
+            let data = result as? Data
+        else {
             return nil
         }
         return String(data: data, encoding: .utf8)
