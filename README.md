@@ -1,5 +1,7 @@
 # swift-mercury
 
+[![CI](https://github.com/hutusi/swift-mercury/actions/workflows/ci.yml/badge.svg)](https://github.com/hutusi/swift-mercury/actions/workflows/ci.yml)
+
 Native iOS client for [Mercury](https://github.com/hutusi/mercury), a bilingual
 (简体中文 / English) English-learning app for TOEIC, IELTS, and Business English.
 
