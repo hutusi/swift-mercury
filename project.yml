@@ -36,6 +36,17 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
     dependencies:
       - target: Mercury
+  MercuryUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [MercuryUITests]
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        # XCTestCase overrides nonisolated initializers; default-MainActor breaks them.
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+    dependencies:
+      - target: Mercury
 schemes:
   Mercury:
     build:
@@ -43,3 +54,10 @@ schemes:
         Mercury: all
     test:
       targets: [MercuryTests]
+  # UI smoke needs a live backend; kept out of the default test action.
+  MercurySmoke:
+    build:
+      targets:
+        Mercury: all
+    test:
+      targets: [MercuryUITests]
