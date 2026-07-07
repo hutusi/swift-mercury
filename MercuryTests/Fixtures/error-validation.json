@@ -1,0 +1,1 @@
+{"error":{"code":"validation_failed","message":"Request failed validation","details":[{"code":"invalid_value","values":["toeic","ielts","business"],"path":[],"message":"Invalid option: expected one of \"toeic\"|\"ielts\"|\"business\""}]}}
