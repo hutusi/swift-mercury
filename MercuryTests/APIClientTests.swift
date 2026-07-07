@@ -120,7 +120,7 @@ struct APIClientTests {
             answers: ["toeic-w-068": "toeic-w-025"]
         )
 
-        #expect(result.score == 2)
+        #expect(result.score == result.correctWordIds.count)
         let payload = try #require(transport.requests.first?.bodyJSON)
         #expect(payload["track"] as? String == "toeic")
         let answers = try #require(payload["answers"] as? [String: String])

@@ -34,15 +34,18 @@ struct AuthServiceTests {
     }
 
     @Test func signInFallsBackToBodyToken() async throws {
-        // signup-body.json carries the token better-auth mirrors into the body.
+        // signup-body.json carries the token better-auth mirrors into the body;
+        // the expected value is read from the fixture so recapture can't break this.
         let body = try Fixtures.data("signup-body")
+        let raw = try JSONSerialization.jsonObject(with: body) as? [String: Any]
+        let expected = try #require(raw?["token"] as? String)
         let (service, _) = makeService { request in
             (body, makeHTTPResponse(url: request.url!, status: 200))
         }
 
         let token = try await service.signIn(email: "a@b.com", password: "password123")
 
-        #expect(token == "RSxHE0D0g0FmhLoIbaC8Y4EpK3z6SXMs")
+        #expect(token == expected)
     }
 
     @Test func signUpSendsNameEmailPassword() async throws {
