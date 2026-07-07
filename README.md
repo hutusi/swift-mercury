@@ -7,8 +7,9 @@ Native iOS client for [Mercury](https://github.com/hutusi/mercury), a bilingual
 
 This MVP covers auth, onboarding, the dashboard, and the full vocabulary
 feature (SM-2 spaced-repetition flashcards and self-check quizzes) against
-Mercury's `/api/v1` REST API. Reading/listening drills, the mistakes notebook,
-mock exams, and writing/speaking are later phases.
+Mercury's `/api/v1` REST API. The UI is bilingual — Simplified Chinese when
+the system locale is zh-Hans, English otherwise. Reading/listening drills,
+the mistakes notebook, mock exams, and writing/speaking are later phases.
 
 ## Requirements
 
@@ -49,23 +50,18 @@ only), or launch with `-debug.baseURLOverride http://host:port`.
 
 ## Architecture
 
-- SwiftUI + `@Observable` view models, Swift 6 language mode with default
-  MainActor isolation. No third-party dependencies.
-- `SessionModel` (Features/Session) drives the root switch:
-  loading → login → onboarding → main tabs. Any 401 lands back on login.
-- `APIClient` (Core) is a hand-written URLSession + Codable client for
-  `/api/v1`. The contract source is Mercury's `docs/api/openapi.yaml`; JSON
-  fixtures in `MercuryTests/Fixtures/` are captured verbatim from a live
-  server and pin the models to the real wire format.
-- Auth is bearer-token only (better-auth): the token arrives in the
-  `set-auth-token` response header and lives in the Keychain. The URLSession
-  is configured to never store cookies — a replayed session cookie without an
-  `Origin` header trips better-auth's CSRF check.
+SwiftUI + `@Observable` view models, Swift 6 with default MainActor isolation,
+zero third-party dependencies, bearer-only cookie-free auth with the token in
+the Keychain. The long version lives in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md);
+decisions and their trade-offs are recorded in [docs/adr/](docs/adr/).
+Day-to-day commands and contribution gotchas: [CLAUDE.md](CLAUDE.md).
 
 ## Tests
 
 Unit tests (`MercuryTests`) run with the scheme's test action and are hermetic
-(stubbed transport, no network). The UI smoke test (`MercuryUITests`) drives
+(stubbed transport, no network). DTO tests decode JSON fixtures captured from
+a live server — refresh them after backend API changes with
+`scripts/refresh-fixtures.sh`. The UI smoke test (`MercuryUITests`) drives
 register → onboard → study against a live backend:
 
 ```bash
