@@ -1,0 +1,14 @@
+# XcodeGen output — regenerate with `xcodegen generate`
+Mercury.xcodeproj/
+Mercury/Support/Info.plist
+
+# Build artifacts
+.build/
+DerivedData/
+*.xcresult
+
+# Xcode user state
+xcuserdata/
+
+# macOS
+.DS_Store

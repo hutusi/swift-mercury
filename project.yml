@@ -1,0 +1,61 @@
+name: Mercury
+options:
+  bundleIdPrefix: com.hutusi
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+configFiles:
+  Debug: Config/Debug.xcconfig
+  Release: Config/Release.xcconfig
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+    SWIFT_APPROACHABLE_CONCURRENCY: YES
+targets:
+  Mercury:
+    type: application
+    platform: iOS
+    sources: [Mercury]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hutusi.mercury
+    info:
+      path: Mercury/Support/Info.plist
+      properties:
+        UILaunchScreen: {}
+        APIBaseURL: $(API_BASE_URL)
+  MercuryTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [MercuryTests]
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: Mercury
+  MercuryUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [MercuryUITests]
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        # XCTestCase overrides nonisolated initializers; default-MainActor breaks them.
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+    dependencies:
+      - target: Mercury
+schemes:
+  Mercury:
+    build:
+      targets:
+        Mercury: all
+    test:
+      targets: [MercuryTests]
+  # UI smoke needs a live backend; kept out of the default test action.
+  MercurySmoke:
+    build:
+      targets:
+        Mercury: all
+    test:
+      targets: [MercuryUITests]
