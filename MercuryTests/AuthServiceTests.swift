@@ -85,6 +85,34 @@ struct AuthServiceTests {
         }
     }
 
+    @Test func duplicateSignUpMapsToLocalizedMessage() async throws {
+        let body = Data(#"{"code":"USER_ALREADY_EXISTS","message":"User already exists"}"#.utf8)
+        let (service, _) = makeService { request in
+            (body, makeHTTPResponse(url: request.url!, status: 422))
+        }
+
+        await #expect {
+            _ = try await service.signUp(name: "A", email: "a@b.com", password: "password123")
+        } throws: { error in
+            guard case .authFailed(let message) = error as? APIError else { return false }
+            return message == String(localized: "An account with this email already exists.")
+        }
+    }
+
+    @Test func unknownAuthCodeFallsBackToServerMessage() async throws {
+        let body = Data(#"{"code":"EMAIL_NOT_VERIFIED","message":"Email not verified"}"#.utf8)
+        let (service, _) = makeService { request in
+            (body, makeHTTPResponse(url: request.url!, status: 403))
+        }
+
+        await #expect {
+            _ = try await service.signIn(email: "a@b.com", password: "password123")
+        } throws: { error in
+            guard case .authFailed(let message) = error as? APIError else { return false }
+            return message == "Email not verified"
+        }
+    }
+
     @Test func successWithoutAnyTokenIsInvalidResponse() async throws {
         let (service, _) = makeService { request in
             (Data("{}".utf8), makeHTTPResponse(url: request.url!, status: 200))

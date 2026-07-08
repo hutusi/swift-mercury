@@ -39,6 +39,16 @@ rm -f "$HEADERS"
 test -n "$TOKEN" || { echo "error: no set-auth-token header on sign-up" >&2; exit 1; }
 AUTH="Authorization: Bearer $TOKEN"
 
+# Scrub the live session token from the committed fixture (secret scanners
+# flag it, and tests read whatever value is present rather than pinning it).
+python3 - <<'EOF'
+import json
+body = json.load(open("signup-body.json"))
+if "token" in body:
+    body["token"] = "fixture-token-redacted"
+json.dump(body, open("signup-body.json", "w"), ensure_ascii=False, indent=1)
+EOF
+
 # better-auth failure shape (not the v1 envelope).
 curl -s -o auth-error.json -X POST "$BASE_URL/api/auth/sign-in/email" \
     -H 'Content-Type: application/json' \
@@ -61,7 +71,8 @@ curl -s -H "$AUTH" "$BASE_URL/api/v1/vocab/study-queue" >study-queue.json
 curl -s -H "$AUTH" "$BASE_URL/api/v1/vocab/quiz" >quiz.json
 
 # Grade the first study card (creates SRS state + streak activity).
-WORD_ID=$(python3 -c "import json; print(json.load(open('study-queue.json'))['cards'][0]['wordId'])")
+WORD_ID=$(python3 -c "import json; print(json.load(open('study-queue.json'))['cards'][0]['wordId'])") \
+    || { echo "error: study queue is empty — is the content seeded? (bun run db:seed)" >&2; exit 1; }
 curl -s -X POST "$BASE_URL/api/v1/vocab/grade" \
     -H "$AUTH" -H 'Content-Type: application/json' \
     -d "{\"wordId\":\"$WORD_ID\",\"grade\":4}" >grade.json

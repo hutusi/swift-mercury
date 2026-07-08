@@ -9,12 +9,16 @@ struct FlashcardView: View {
 
     var body: some View {
         ZStack {
+            // Both faces stay mounted for the animation, so the invisible one
+            // must be explicitly hidden or VoiceOver reads both at once.
             front
                 .opacity(isFlipped ? 0 : 1)
                 .rotation3DEffect(.degrees(flipDegrees(front: true)), axis: (x: 0, y: 1, z: 0))
+                .accessibilityHidden(isFlipped)
             back
                 .opacity(isFlipped ? 1 : 0)
                 .rotation3DEffect(.degrees(flipDegrees(front: false)), axis: (x: 0, y: 1, z: 0))
+                .accessibilityHidden(!isFlipped)
         }
         .animation(reduceMotion ? .easeInOut(duration: 0.2) : .spring(duration: 0.4), value: isFlipped)
     }

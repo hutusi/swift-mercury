@@ -1,1 +1,12 @@
-{"token":"QhyxR2rnUNlmaiG9uaMekT0XQDQHZNLM","user":{"name":"Fixture User","email":"fixture-1783459082@example.com","emailVerified":false,"image":null,"createdAt":"2026-07-07T21:18:04.094Z","updatedAt":"2026-07-07T21:18:04.094Z","id":"xdsjEedchV1lds3nOREHX9D46FMF0N7V"}}
+{
+ "token": "fixture-token-redacted",
+ "user": {
+  "name": "Fixture User",
+  "email": "fixture-1783459082@example.com",
+  "emailVerified": false,
+  "image": null,
+  "createdAt": "2026-07-07T21:18:04.094Z",
+  "updatedAt": "2026-07-07T21:18:04.094Z",
+  "id": "xdsjEedchV1lds3nOREHX9D46FMF0N7V"
+ }
+}

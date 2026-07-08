@@ -71,13 +71,14 @@ final class AuthService {
 
         guard (200..<300).contains(response.statusCode) else {
             let body = try? JSONDecoder().decode(AuthErrorBody.self, from: data)
-            // better-auth messages are English-only; localize the code we know.
-            let message: String
-            if body?.code == "INVALID_EMAIL_OR_PASSWORD" {
-                message = String(localized: "Invalid email or password.")
-            } else {
-                message = body?.message ?? String(localized: "Authentication failed.")
-            }
+            // better-auth messages are English-only; localize the codes the
+            // client can actually trigger, fall back to the raw message.
+            let message =
+                switch body?.code {
+                case "INVALID_EMAIL_OR_PASSWORD": String(localized: "Invalid email or password.")
+                case "USER_ALREADY_EXISTS": String(localized: "An account with this email already exists.")
+                default: body?.message ?? String(localized: "Authentication failed.")
+                }
             throw APIError.authFailed(message: message)
         }
 

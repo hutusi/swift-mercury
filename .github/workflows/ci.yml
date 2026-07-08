@@ -18,6 +18,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install XcodeGen
         run: brew install xcodegen
@@ -38,9 +40,11 @@ jobs:
           echo "udid=$UDID" >> "$GITHUB_OUTPUT"
 
       - name: Build and run unit tests
+        env:
+          SIM_UDID: ${{ steps.sim.outputs.udid }}
         run: |
           xcodebuild -project Mercury.xcodeproj -scheme Mercury \
-            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -destination "id=$SIM_UDID" \
             -derivedDataPath .build build test
 
       - name: Upload test results on failure

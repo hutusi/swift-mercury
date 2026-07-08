@@ -97,6 +97,16 @@
         }
       }
     },
+    "An account with this email already exists.": {
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "该邮箱已注册。"
+          }
+        }
+      }
+    },
     "Apply & Sign Out": {
       "shouldTranslate": false
     },
