@@ -55,9 +55,11 @@ struct AuthFlowView: View {
                 }
 
                 Section {
-                    Button(mode == .signIn
-                           ? "New to Mercury? Create an account"
-                           : "Already have an account? Sign in") {
+                    Button(
+                        mode == .signIn
+                            ? "New to Mercury? Create an account"
+                            : "Already have an account? Sign in"
+                    ) {
                         mode = mode == .signIn ? .signUp : .signIn
                         errorMessage = nil
                     }

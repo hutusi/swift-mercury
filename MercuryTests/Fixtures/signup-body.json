@@ -1,1 +1,12 @@
-{"token":"RSxHE0D0g0FmhLoIbaC8Y4EpK3z6SXMs","user":{"name":"iOS Fixture","email":"ios-fixture@example.com","emailVerified":false,"image":null,"createdAt":"2026-07-07T01:24:37.698Z","updatedAt":"2026-07-07T01:24:37.698Z","id":"cj1UjgeyLMR7RCXH9xxJAQwlvUZ87iSB"}}
+{
+ "token": "fixture-token-redacted",
+ "user": {
+  "name": "Fixture User",
+  "email": "fixture-1783459082@example.com",
+  "emailVerified": false,
+  "image": null,
+  "createdAt": "2026-07-07T21:18:04.094Z",
+  "updatedAt": "2026-07-07T21:18:04.094Z",
+  "id": "xdsjEedchV1lds3nOREHX9D46FMF0N7V"
+ }
+}

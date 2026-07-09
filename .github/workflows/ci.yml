@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  quality:
+    # macos-26 ships Xcode 26.5 as default with a matching iOS runtime;
+    # xcodebuild refuses all simulator destinations when the selected
+    # Xcode has no matching runtime, so image and Xcode must stay paired.
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate project
+        run: xcodegen generate
+
+      - name: Lint
+        run: swift format lint --strict --recursive Mercury MercuryTests MercuryUITests
+
+      # Never hardcode a simulator OS version: it changes with the image.
+      - name: Pick a simulator
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available | grep "iPhone" | head -1 | grep -oE "[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}")
+          test -n "$UDID"
+          xcrun simctl list devices available | grep "$UDID"
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+
+      - name: Build and run unit tests
+        env:
+          SIM_UDID: ${{ steps.sim.outputs.udid }}
+        run: |
+          xcodebuild -project Mercury.xcodeproj -scheme Mercury \
+            -destination "id=$SIM_UDID" \
+            -derivedDataPath .build build test
+
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcresult
+          path: .build/Logs/Test/*.xcresult
+          if-no-files-found: ignore

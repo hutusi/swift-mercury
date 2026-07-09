@@ -1,4 +1,5 @@
 import Foundation
+
 @testable import Mercury
 
 /// Closure-backed MercuryAPI double for view-model tests. Unstubbed calls throw.

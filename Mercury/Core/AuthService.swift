@@ -18,7 +18,8 @@ final class AuthService {
 
     init(baseURL: URL, transport: (any HTTPTransport)? = nil) {
         self.baseURL = baseURL
-        self.transport = transport
+        self.transport =
+            transport
             ?? URLSessionTransport(session: URLSession(configuration: APIClient.makeURLSessionConfiguration()))
     }
 
@@ -70,9 +71,15 @@ final class AuthService {
 
         guard (200..<300).contains(response.statusCode) else {
             let body = try? JSONDecoder().decode(AuthErrorBody.self, from: data)
-            throw APIError.authFailed(
-                message: body?.message ?? String(localized: "Authentication failed.")
-            )
+            // better-auth messages are English-only; localize the codes the
+            // client can actually trigger, fall back to the raw message.
+            let message =
+                switch body?.code {
+                case "INVALID_EMAIL_OR_PASSWORD": String(localized: "Invalid email or password.")
+                case "USER_ALREADY_EXISTS": String(localized: "An account with this email already exists.")
+                default: body?.message ?? String(localized: "Authentication failed.")
+                }
+            throw APIError.authFailed(message: message)
         }
 
         if let token = response.value(forHTTPHeaderField: "set-auth-token"), !token.isEmpty {

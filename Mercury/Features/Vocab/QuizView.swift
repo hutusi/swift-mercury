@@ -4,6 +4,8 @@ struct QuizView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var model: QuizViewModel
     @State private var confirmClose = false
+    @ScaledMetric(relativeTo: .largeTitle) private var promptSize = 32.0
+    @ScaledMetric(relativeTo: .largeTitle) private var scoreSize = 44.0
 
     init(api: any MercuryAPI) {
         _model = State(initialValue: QuizViewModel(api: api))
@@ -85,6 +87,13 @@ struct QuizView: View {
     }
 
     private var questionView: some View {
+        // Scrolls so all four options stay reachable at accessibility text sizes.
+        ScrollView {
+            questionContent
+        }
+    }
+
+    private var questionContent: some View {
         VStack(spacing: 24) {
             if let question = model.currentQuestion {
                 VStack(spacing: 8) {
@@ -92,7 +101,7 @@ struct QuizView: View {
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                     Text(question.prompt)
-                        .font(.system(size: 32, weight: .bold))
+                        .font(.system(size: promptSize, weight: .bold))
                         .multilineTextAlignment(.center)
                 }
                 .padding(.top, 32)
@@ -121,13 +130,15 @@ struct QuizView: View {
             Section {
                 VStack(spacing: 8) {
                     Text("\(result.score) / \(result.total)")
-                        .font(.system(size: 44, weight: .bold))
+                        .font(.system(size: scoreSize, weight: .bold))
                         .monospacedDigit()
-                    Text(result.score == result.total
-                         ? "Perfect score!"
-                         : "Missed words go to your mistakes notebook.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    Text(
+                        result.score == result.total
+                            ? "Perfect score!"
+                            : "Missed words go to your mistakes notebook."
+                    )
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)

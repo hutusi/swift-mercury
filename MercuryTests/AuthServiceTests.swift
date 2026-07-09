@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import Mercury
 
 struct AuthServiceTests {
@@ -15,10 +16,13 @@ struct AuthServiceTests {
     @Test func signInPrefersHeaderToken() async throws {
         let body = try Fixtures.data("signup-body")
         let (service, transport) = makeService { request in
-            (body, makeHTTPResponse(
-                url: request.url!, status: 200,
-                headers: ["set-auth-token": "header-token"]
-            ))
+            (
+                body,
+                makeHTTPResponse(
+                    url: request.url!, status: 200,
+                    headers: ["set-auth-token": "header-token"]
+                )
+            )
         }
 
         let token = try await service.signIn(email: "a@b.com", password: "password123")
@@ -30,24 +34,30 @@ struct AuthServiceTests {
     }
 
     @Test func signInFallsBackToBodyToken() async throws {
-        // signup-body.json carries the token better-auth mirrors into the body.
+        // signup-body.json carries the token better-auth mirrors into the body;
+        // the expected value is read from the fixture so recapture can't break this.
         let body = try Fixtures.data("signup-body")
+        let raw = try JSONSerialization.jsonObject(with: body) as? [String: Any]
+        let expected = try #require(raw?["token"] as? String)
         let (service, _) = makeService { request in
             (body, makeHTTPResponse(url: request.url!, status: 200))
         }
 
         let token = try await service.signIn(email: "a@b.com", password: "password123")
 
-        #expect(token == "RSxHE0D0g0FmhLoIbaC8Y4EpK3z6SXMs")
+        #expect(token == expected)
     }
 
     @Test func signUpSendsNameEmailPassword() async throws {
         let body = try Fixtures.data("signup-body")
         let (service, transport) = makeService { request in
-            (body, makeHTTPResponse(
-                url: request.url!, status: 200,
-                headers: ["set-auth-token": "t"]
-            ))
+            (
+                body,
+                makeHTTPResponse(
+                    url: request.url!, status: 200,
+                    headers: ["set-auth-token": "t"]
+                )
+            )
         }
 
         _ = try await service.signUp(name: "iOS Fixture", email: "a@b.com", password: "password123")
@@ -70,7 +80,36 @@ struct AuthServiceTests {
             _ = try await service.signIn(email: "a@b.com", password: "wrong")
         } throws: { error in
             guard case .authFailed(let message) = error as? APIError else { return false }
-            return message == "Invalid email or password"
+            // The known better-auth code maps to localized client copy.
+            return message == String(localized: "Invalid email or password.")
+        }
+    }
+
+    @Test func duplicateSignUpMapsToLocalizedMessage() async throws {
+        let body = Data(#"{"code":"USER_ALREADY_EXISTS","message":"User already exists"}"#.utf8)
+        let (service, _) = makeService { request in
+            (body, makeHTTPResponse(url: request.url!, status: 422))
+        }
+
+        await #expect {
+            _ = try await service.signUp(name: "A", email: "a@b.com", password: "password123")
+        } throws: { error in
+            guard case .authFailed(let message) = error as? APIError else { return false }
+            return message == String(localized: "An account with this email already exists.")
+        }
+    }
+
+    @Test func unknownAuthCodeFallsBackToServerMessage() async throws {
+        let body = Data(#"{"code":"EMAIL_NOT_VERIFIED","message":"Email not verified"}"#.utf8)
+        let (service, _) = makeService { request in
+            (body, makeHTTPResponse(url: request.url!, status: 403))
+        }
+
+        await #expect {
+            _ = try await service.signIn(email: "a@b.com", password: "password123")
+        } throws: { error in
+            guard case .authFailed(let message) = error as? APIError else { return false }
+            return message == "Email not verified"
         }
     }
 

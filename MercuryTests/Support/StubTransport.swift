@@ -1,4 +1,5 @@
 import Foundation
+
 @testable import Mercury
 
 final class StubTransport: HTTPTransport {

@@ -28,11 +28,27 @@ enum APIError: Error {
 extension APIError: LocalizedError {
     var errorDescription: String? {
         switch self {
-        case .server(_, _, let message): message
+        case .server(_, let code, let message): APIError.localizedMessage(for: code) ?? message
         case .authFailed(let message): message
         case .transport: String(localized: "Could not reach the server. Check your connection.")
         case .decoding: String(localized: "The server sent an unexpected response.")
         case .invalidResponse: String(localized: "The server sent an unexpected response.")
+        }
+    }
+
+    /// Server error messages arrive in English regardless of the user's
+    /// locale, so known codes map to localized client copy; unknown codes
+    /// fall back to the raw server message.
+    static func localizedMessage(for code: APIErrorCode) -> String? {
+        switch code {
+        case .unauthorized: String(localized: "Please sign in again.")
+        case .onboardingRequired: String(localized: "Pick a learning track first.")
+        case .validationFailed: String(localized: "That input wasn't accepted. Check it and try again.")
+        case .notFound: String(localized: "That content is no longer available.")
+        case .integrity: String(localized: "That action isn't available right now.")
+        case .aiUnavailable: String(localized: "AI feedback is temporarily unavailable. Try again later.")
+        case .internalError: String(localized: "Something went wrong on the server. Try again.")
+        default: nil
         }
     }
 }

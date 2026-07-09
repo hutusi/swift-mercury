@@ -1,25 +1,36 @@
 import Foundation
 import Testing
+
 @testable import Mercury
 
-/// Fixtures under `Fixtures/` are captured verbatim from a live Mercury server
-/// (see repo README), so these tests pin the client models to the real wire format.
+/// Fixtures under `Fixtures/` are captured from a live Mercury server by
+/// `scripts/refresh-fixtures.sh`, so these tests pin the client models to the
+/// real wire format. Assertions target what the capture script makes
+/// deterministic (toeic onboarding, fresh account, seeded content shape) —
+/// never run-dependent values like emails, timestamps, or random quiz draws.
 struct DTODecodingTests {
     @Test func decodesMeWithSettings() throws {
         let me = try Fixtures.decode(MeResponse.self, from: "me")
-        #expect(me.user.email == "ios-fixture@example.com")
+        #expect(me.user.email.contains("@"))
+        #expect(!me.user.id.isEmpty)
         #expect(me.settings?.activeTrack == .toeic)
         #expect(me.settings?.dailyGoal == 20)
         #expect(me.aiEnabled == false)
     }
 
     @Test func decodesFractionalSecondDates() throws {
+        // Compare against the raw string in the fixture itself, so the test
+        // proves fractional-second parsing without pinning a capture timestamp.
+        // Tolerance, not string equality: ISO8601FormatStyle can round-trip
+        // ".726" back out as ".725" (sub-millisecond float truncation).
+        let raw = try JSONSerialization.jsonObject(with: Fixtures.data("me")) as? [String: Any]
+        let rawDate = try #require((raw?["settings"] as? [String: Any])?["onboardedAt"] as? String)
+        #expect(rawDate.contains("."), "fixture date lost its fractional seconds — recapture")
+
         let me = try Fixtures.decode(MeResponse.self, from: "me")
         let onboardedAt = try #require(me.settings?.onboardedAt)
-        let roundTripped = onboardedAt.formatted(
-            Date.ISO8601FormatStyle(includingFractionalSeconds: true)
-        )
-        #expect(roundTripped == "2026-07-07T01:24:38.212Z")
+        let expected = try Date(rawDate, strategy: Date.ISO8601FormatStyle(includingFractionalSeconds: true))
+        #expect(abs(onboardedAt.timeIntervalSince(expected)) < 0.002)
     }
 
     @Test func decodesMeBeforeOnboarding() throws {
@@ -43,9 +54,10 @@ struct DTODecodingTests {
 
     @Test func decodesDashboardWithQuizScore() throws {
         let dashboard = try Fixtures.decode(DashboardResponse.self, from: "dashboard-after")
+        #expect(dashboard.streak == 1)
         let recent = try #require(dashboard.recentScores.first)
         #expect(recent.kind == .vocabQuiz)
-        #expect(recent.score == 2)
+        #expect(recent.score != nil)
         #expect(recent.total == 10)
         #expect(recent.scoreLabel == nil)
         #expect(recent.estimate == nil)
@@ -53,16 +65,16 @@ struct DTODecodingTests {
 
     @Test func unknownScoreKindDoesNotFailDecoding() throws {
         let json = """
-        {"kind": "pronunciation", "at": "2026-07-07T01:00:00.000Z", "scoreLabel": null}
-        """
+            {"kind": "pronunciation", "at": "2026-07-07T01:00:00.000Z", "scoreLabel": null}
+            """
         let score = try Fixtures.decode(RecentScore.self, fromJSON: json)
         #expect(score.kind == .unknown("pronunciation"))
     }
 
     @Test func decodesWritingScoreWithLabel() throws {
         let json = """
-        {"kind": "writing", "at": "2026-07-07T01:00:00.000Z", "scoreLabel": "Band 6.5"}
-        """
+            {"kind": "writing", "at": "2026-07-07T01:00:00.000Z", "scoreLabel": "Band 6.5"}
+            """
         let score = try Fixtures.decode(RecentScore.self, fromJSON: json)
         #expect(score.kind == .writing)
         #expect(score.scoreLabel == "Band 6.5")
@@ -71,27 +83,30 @@ struct DTODecodingTests {
 
     @Test func decodesToeicEstimate() throws {
         let json = """
-        {"kind": "toeic", "listening": 320, "reading": 290, "total": 610}
-        """
+            {"kind": "toeic", "listening": 320, "reading": 290, "total": 610}
+            """
         let estimate = try Fixtures.decode(ExamEstimate.self, fromJSON: json)
         #expect(estimate == .toeic(listening: 320, reading: 290, total: 610))
     }
 
     @Test func decodesIeltsEstimate() throws {
         let json = """
-        {"kind": "ielts", "band": 6.5}
-        """
+            {"kind": "ielts", "band": 6.5}
+            """
         let estimate = try Fixtures.decode(ExamEstimate.self, fromJSON: json)
         #expect(estimate == .ielts(band: 6.5))
     }
 
     @Test func decodesVocabOverview() throws {
         let overview = try Fixtures.decode(VocabOverview.self, from: "vocab-overview")
+        // The capture script trims to 6 words; the counts reflect a fresh account.
         #expect(overview.words.count == 6)
-        #expect(overview.freshCount == 100)
+        #expect(overview.freshCount > 0)
+        #expect(overview.dueCount == 0)
+        #expect(overview.learnedCount == 0)
         let first = try #require(overview.words.first)
-        #expect(first.word.headword == "invoice")
-        #expect(first.word.translationZh == "发票；账单")
+        #expect(!first.word.headword.isEmpty)
+        #expect(!first.word.translationZh.isEmpty)
         #expect(first.started == false)
         #expect(first.due == false)
     }
@@ -121,9 +136,10 @@ struct DTODecodingTests {
 
     @Test func decodesQuizResult() throws {
         let result = try Fixtures.decode(QuizResult.self, from: "quiz-result")
-        #expect(result.score == 2)
+        // The capture answers randomly-ordered options, so only invariants hold.
         #expect(result.total == 10)
-        #expect(result.correctWordIds.count == 2)
+        #expect(result.score == result.correctWordIds.count)
+        #expect((0...result.total).contains(result.score))
     }
 
     @Test func decodesErrorEnvelopes() throws {

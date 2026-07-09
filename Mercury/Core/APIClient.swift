@@ -35,10 +35,11 @@ enum JSONCoding {
             if let date = try? Date(string, strategy: .iso8601) {
                 return date
             }
-            throw DecodingError.dataCorrupted(.init(
-                codingPath: decoder.codingPath,
-                debugDescription: "Unparseable ISO-8601 date: \(string)"
-            ))
+            throw DecodingError.dataCorrupted(
+                .init(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "Unparseable ISO-8601 date: \(string)"
+                ))
         }
         return decoder
     }
@@ -68,7 +69,8 @@ final class APIClient: MercuryAPI {
     init(baseURL: URL, tokenStore: any TokenStore, transport: (any HTTPTransport)? = nil) {
         self.baseURL = baseURL
         self.tokenStore = tokenStore
-        self.transport = transport
+        self.transport =
+            transport
             ?? URLSessionTransport(session: URLSession(configuration: APIClient.makeURLSessionConfiguration()))
     }
 

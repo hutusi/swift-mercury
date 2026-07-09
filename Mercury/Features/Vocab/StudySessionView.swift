@@ -74,6 +74,13 @@ struct StudySessionView: View {
     }
 
     private var studyView: some View {
+        // Scrolls so the grade bar stays reachable at accessibility text sizes.
+        ScrollView {
+            studyContent
+        }
+    }
+
+    private var studyContent: some View {
         VStack(spacing: 20) {
             if let card = model.currentCard {
                 FlashcardView(card: card, isFlipped: model.isFlipped)
@@ -81,6 +88,15 @@ struct StudySessionView: View {
                     .onTapGesture {
                         model.flip()
                     }
+                    // One VoiceOver element: tap gestures alone aren't
+                    // discoverable or activatable with VoiceOver.
+                    .accessibilityElement(children: .combine)
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityHint(
+                        model.isFlipped
+                            ? Text("Shows the front of the card again.")
+                            : Text("Reveals the meaning and examples.")
+                    )
             }
 
             if let error = model.gradeError {

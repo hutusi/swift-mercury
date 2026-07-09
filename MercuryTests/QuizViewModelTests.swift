@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import Mercury
 
 struct QuizViewModelTests {
@@ -20,10 +21,12 @@ struct QuizViewModelTests {
     @Test func selectingRecordsAnswerAndAdvances() async {
         let api = MockAPI()
         api.quizHandler = {
-            QuizResponse(track: .toeic, questions: [
-                self.makeQuestion("w1", correctText: "right 1"),
-                self.makeQuestion("w2", correctText: "right 2"),
-            ])
+            QuizResponse(
+                track: .toeic,
+                questions: [
+                    self.makeQuestion("w1", correctText: "right 1"),
+                    self.makeQuestion("w2", correctText: "right 2"),
+                ])
         }
         let model = QuizViewModel(api: api)
         await model.load()
